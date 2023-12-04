@@ -19,7 +19,7 @@ clear all
 % diameter of prop 0.13 m so L has to be greater than 0.13
 L_values = [0.1, 0.15, 0.2, 0.4];  % You can adjust these values as needed
 
-rpm = 26280 * (pi/60);
+rpm = 26280 * (2*pi/60);
 % Initialize a cell array to store results for different L values
 results = cell(length(L_values), 1);
 
@@ -65,7 +65,14 @@ for i = 1:length(L_values)
         F_thrust= RGb*[0;0;T1(t)+T2(t)+T3(t)+T4(t)]; % Total thrust 
     % Final Equation of motion
         Acc_G=(1/m)*(Fg-F_thrust - Fd); % Translation EOM (X_dot_dot; Y_dot_dot; Z_dot_dot)
-
+        % Acc_G_str = string(Acc_G)
+        % Acc_G_str=strrep(Acc_G_str,'phi(t)','X(1)');
+        % Acc_G_str=strrep(Acc_G_str,'theta(t)','X(3)');
+        % Acc_G_str=strrep(Acc_G_str,'si(t)','X(5)');
+        % Acc_G_str=strrep(Acc_G_str,'W1(t)',num2str(rpm*0.502));
+        % Acc_G_str=strrep(Acc_G_str,'W2(t)',num2str(rpm*0.502));
+        % Acc_G_str=strrep(Acc_G_str,'W3(t)',num2str(rpm*0.502));
+        % Acc_G_str=strrep(Acc_G_str,'W4(t)',num2str(rpm*0.502));
     %% Rotational EOM 
         I=[0.224 0 0; 
             0 0.224 0; 
@@ -133,10 +140,10 @@ for i = 1:length(L_values)
         w_dot_str=strrep(w_dot_str,'si_derivative(t)','X(6)');
         w_dot_str=strrep(w_dot_str,'phi_derivative(t)','X(2)');
         w_dot_str=strrep(w_dot_str,'theta_derivative(t)','X(4)');
-        w_dot_str=strrep(w_dot_str,'W1(t)',num2str(rpm/20));
-        w_dot_str=strrep(w_dot_str,'W2(t)',num2str(rpm/20));
-        w_dot_str=strrep(w_dot_str,'W3(t)',num2str(rpm/5));
-        w_dot_str=strrep(w_dot_str,'W4(t)',num2str(rpm/5));
+        w_dot_str=strrep(w_dot_str,'W1(t)',num2str(rpm*0.502));
+        w_dot_str=strrep(w_dot_str,'W2(t)',num2str(rpm*0.502));
+        w_dot_str=strrep(w_dot_str,'W3(t)',num2str(rpm*0.5));
+        w_dot_str=strrep(w_dot_str,'W4(t)',num2str(rpm*0.5));
 
     w_dot_str;
     % kt 
@@ -176,11 +183,15 @@ for i = 1:length(L_values)
     X = results{i}{3};
 
     subplot(2, 2, i);  % Adjust the subplot layout as needed
-    plot(t, X);
+    hold on
+    plot(t, X(:,2));
+    plot(t, X(:,4));
+    plot(t, X(:,6));
     title(['Arm Length L = ', num2str(L),'m']);
     xlabel('Time (sec)');
     ylabel('Eulers Angualar Velocity (rad/s)');
-    legend('phi','phi dot','theta','theta dot','si','si dot');
+    legend('phi dot','theta dot','si dot');
+    hold off
 end
 
 

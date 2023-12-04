@@ -17,15 +17,11 @@ clear all
 % Define a range of arm lengths L
 
 % diameter of prop 0.13 m so L has to be greater than 0.13
-L_values = [0.1, 0.15, 0.2, 0.4];  % You can adjust these values as needed
+L_values = [0.1, 0.15, 0.2];  % You can adjust these values as needed
 
-rpm1 = 26280 * (pi/60);
-rpm2 = 26280 * (pi/60);
-rpm3 = 26280 * (pi/60);
-rpm4 = 26280 * (pi/60);
+rpm = 26280 * (2*pi/60);
 % Initialize a cell array to store results for different L values
 results = cell(length(L_values), 1);
-
 
 for i = 1:length(L_values)
     L = L_values(i);
@@ -52,14 +48,11 @@ for i = 1:length(L_values)
     %% Translational EOM 
         syms m g T1(t) T2(t) T3(t) T4(t) W1(t) W2(t) W3(t) W4(t) t kt
         Fg=[0;0;m*g]; % airplane weight 
-        m= 0.300;
+        g = 9.81;
+        m= 0.468;
         Fd=0; % drag =0 
-        kt=3.7102e-5;
-    % 4 speeds for each motor
-        W1(t) ;
-        W2(t) ;
-        W3(t) ;
-        W4(t) ;
+        kt=2.98e-6;
+    
     % Thrust as a function of time given motor speed
         T1(t)=W1(t)^2*kt ;
         T2(t)=W2(t)^2*kt ;
@@ -68,11 +61,19 @@ for i = 1:length(L_values)
         F_thrust= RGb*[0;0;T1(t)+T2(t)+T3(t)+T4(t)]; % Total thrust 
     % Final Equation of motion
         Acc_G=(1/m)*(Fg-F_thrust - Fd); % Translation EOM (X_dot_dot; Y_dot_dot; Z_dot_dot)
-
+        % Acc_G_str = string(Acc_G);
+        % Acc_G_str=strrep(Acc_G_str,'phi(t)','X(1)');
+        % Acc_G_str=strrep(Acc_G_str,'theta(t)','X(3)');
+        % Acc_G_str=strrep(Acc_G_str,'si(t)','X(5)');
+        % Acc_G_str=strrep(Acc_G_str,'W1(t)','6207');
+        % Acc_G_str=strrep(Acc_G_str,'W2(t)','6207');
+        % Acc_G_str=strrep(Acc_G_str,'W3(t)','6207');
+        % Acc_G_str=strrep(Acc_G_str,'W4(t)','6207');
+        % Acc_G_str
     %% Rotational EOM 
-        I=[0.224 0 0; 
-            0 0.224 0; 
-            0 0 0.224]; %Moment of inertia matrix
+        I=[4.856e-3 0 0; 
+            0 4.856e-3 0; 
+            0 0 8.801e-3]; %Moment of inertia matrix
 
 
     % Position of each motor relative to body frame from CG
@@ -81,7 +82,7 @@ for i = 1:length(L_values)
         P3=[-L;0;0];
         P4=[0;-L;0];
 
-        I = update_inertia_tensor(I,[P1,P2,P3,P4],[0.05,0.05,0.05,0.05]);
+        % I = update_inertia_tensor(I,[P1,P2,P3,P4],[0.05,0.05,0.05,0.05]);
     %Motors moment arm contribution in body axis frame
         Tm1=cross(P1,[0;0;-T1(t)]);
         Tm2=cross(P2,[0;0;-T2(t)]);
@@ -89,7 +90,7 @@ for i = 1:length(L_values)
         Tm4=cross(P4,[0;0;-T4(t)]);
         Tm_pitch_roll=Tm1+Tm2+Tm3+Tm4;
     %kd is drag torque proportionality constant
-        kd=7.6933e-07;
+        kd=1.140e-07;
 
     % rotation direction of each motor. +ve=cw, -ve=ccw
     % Mi corresponds to Pi above
@@ -136,10 +137,10 @@ for i = 1:length(L_values)
         w_dot_str=strrep(w_dot_str,'si_derivative(t)','X(6)');
         w_dot_str=strrep(w_dot_str,'phi_derivative(t)','X(2)');
         w_dot_str=strrep(w_dot_str,'theta_derivative(t)','X(4)');
-        w_dot_str=strrep(w_dot_str,'W1(t)',num2str(rpm1/20));
-        w_dot_str=strrep(w_dot_str,'W2(t)',num2str(rpm1/20));
-        w_dot_str=strrep(w_dot_str,'W3(t)',num2str(rpm1/5));
-        w_dot_str=strrep(w_dot_str,'W4(t)',num2str(rpm1/5));
+        w_dot_str=strrep(w_dot_str,'W1(t)','655');
+        w_dot_str=strrep(w_dot_str,'W2(t)','655');
+        w_dot_str=strrep(w_dot_str,'W3(t)','650');
+        w_dot_str=strrep(w_dot_str,'W4(t)','650');
 
     w_dot_str;
     % kt 
@@ -154,8 +155,37 @@ for i = 1:length(L_values)
     results{i} = {L, t, X};
 end
 
+%% Create arrays to store numerical values of Acc_G for each simulation
+acc_G_values = cell(length(L_values), 1);
 
-% Create arrays to store maximum values and corresponding L values
+for i = 1:length(L_values)
+    X = results{i}{3};  % Extract the state variable X
+    t = results{i}{2};  % Extract the time vector
+
+    % Evaluate numerical values of Acc_G using obtained X values
+    acc_G_numeric = zeros(length(t), 3);
+    for j = 1:length(t)
+        phi_val = num2str(X(j, 1));
+        theta_val = num2str(X(j, 3));
+        si_val = num2str(X(j, 5));
+        W1_val = string(6207);
+        W2_val = string(6207);
+        W3_val = string(6207);
+        W4_val = string(6207);
+        Acc_G = string(Acc_G);
+        Acc_G=strrep(Acc_G,'phi(t)','X(1)');
+        Acc_G=strrep(Acc_G,'theta(t)','X(3)');
+        Acc_G=strrep(Acc_G,'si(t)','X(5)');
+        Acc_G=strrep(Acc_G,'W1(t)','655');
+        Acc_G=strrep(Acc_G,'W2(t)','655');
+        Acc_G=strrep(Acc_G,'W3(t)','650');
+        Acc_G=strrep(Acc_G,'W4(t)','650');
+        acc_G_numeric(j, :) = [eval(Acc_G(1,1)),eval(Acc_G(2,1)),eval(Acc_G(3,1))];
+    end
+    acc_G_values{i} = {t, acc_G_numeric};
+end
+
+%% Create arrays to store maximum values and corresponding L values
 max_values = zeros(length(L_values), 1);
 
 for i = 1:length(L_values)
@@ -179,14 +209,36 @@ for i = 1:length(L_values)
     X = results{i}{3};
 
     subplot(2, 2, i);  % Adjust the subplot layout as needed
-    plot(t, X);
+    hold on
+    plot(t, X(:,2));
+    plot(t, X(:,4));
+    plot(t, X(:,6));
     title(['Arm Length L = ', num2str(L),'m']);
     xlabel('Time (sec)');
     ylabel('Eulers Angualar Velocity (rad/s)');
-    legend();
+    legend('phi dot','theta dot','si dot');
+    hold off
 end
 
+%% Plot the results for different L values
+figure;
+for i = 1:length(L_values)
+    L = results{i}{1};
+    t_sim = results{i}{2};
+    acc_G_numeric = acc_G_values{i}{2};
 
+    subplot(2, 2, i);  % Adjust the subplot layout as needed
+    hold on
+    title(['Arm Length L = ', num2str(L),'m']);
+    xlabel('Time (sec)');
+    ylabel('Acceleration (m/s^2)');
+    % Plot numerical values of Acc_G
+    plot(t_sim, acc_G_numeric(:, 1), '--');
+    plot(t_sim, acc_G_numeric(:, 2), '--');
+    plot(t_sim, acc_G_numeric(:, 3), '--');
+    legend('X Acc_G','Y Acc_G','Z Acc_G');
+    hold off
+end
 %% Function 
 function inertia_tensor = update_inertia_tensor(inertia_tensor, point_mass_positions, point_masses)
     % Check if the input parameters are valid
