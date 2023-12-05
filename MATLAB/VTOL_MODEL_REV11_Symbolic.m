@@ -74,7 +74,7 @@ for i = 1:length(L_values)
     P3=[-L;0;0];
     P4=[0;-L;0];
 
-    % I = update_inertia_tensor(I,[P1,P2,P3,P4],[0.05,0.05,0.05,0.05]);
+    I = update_inertia_tensor(I,P1,P2,P3,P4,0.05);
     %Motors moment arm contribution in body axis frame
     Tm1=cross(P1,[0;0;-T1(t)]);
     Tm2=cross(P2,[0;0;-T2(t)]);
@@ -271,29 +271,18 @@ for i = 1:length(L_values)
     hold off
 end
 %% Function 
-function inertia_tensor = update_inertia_tensor(inertia_tensor, point_mass_positions, point_masses)
+function inertia_tensor = update_inertia_tensor(inertia_tensor_, P1, P2, P3, P4, point_masses)
     % Check if the input parameters are valid
-    if ~isequal(size(inertia_tensor), [3, 3])
+    if ~isequal(size(inertia_tensor_), [3, 3])
         error('Inertia tensor must be a 3x3 matrix');
     end
-    if length(point_mass_positions) ~= length(point_masses)
-        error('Number of point mass positions and masses must match');
-    end
-
-    % Loop through each point mass and update the inertia tensor
-    for i = 1:length(point_mass_positions)
-        r = point_mass_positions(i);  % Position vector of the point mass from the center of gravity
-        m = point_masses(i);  % Mass of the point mass
-
-        % Use the parallel axis theorem to update the inertia tensor
-        r_squared = r * r';
-        delta_I = m * [r_squared, 0, 0; 
-                      0, r_squared, 0;
-                      0, 0, r_squared];
-        inertia_tensor = inertia_tensor + delta_I;
-    end
+    m = point_masses;
+    delta1 =  m * (-[0 -P1(3) P1(2); P1(3) 0 -P1(1); P1(2) P1(1) 0] * [0 -P1(3) P1(2); P1(3) 0 -P1(1); P1(2) P1(1) 0]);
+    delta2 =  m * (-[0 -P2(3) P2(2); P2(3) 0 -P2(1); P2(2) P2(1) 0] * [0 -P2(3) P2(2); P2(3) 0 -P2(1); P2(2) P2(1) 0]);
+    delta3 =  m * (-[0 -P3(3) P3(2); P3(3) 0 -P3(1); P3(2) P3(1) 0] * [0 -P3(3) P3(2); P3(3) 0 -P3(1); P3(2) P3(1) 0]);
+    delta4 =  m * (-[0 -P4(3) P4(2); P4(3) 0 -P4(1); P4(2) P4(1) 0] * [0 -P4(3) P4(2); P4(3) 0 -P4(1); P4(2) P4(1) 0]);
+    inertia_tensor = inertia_tensor_ + delta1 + delta2 + delta3 + delta4;
 end
-
 
 
 
