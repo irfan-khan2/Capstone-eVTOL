@@ -39,7 +39,7 @@ T3=W3(t)^2*kt;
 T4=W4(t)^2*kt;
 F_thrust= RGb*[0;0;T1+T2+T3+T4]; % Total thrust
 % Final Equation of motion
-Acc_G=(1/m)*(Fg-F_thrust - Fd)
+Acc_G=(1/m)*(Fg-F_thrust - Fd);
 %% Rotational EOM 
 syms Ixx Iyy Izz
 I=[Ixx 0 0;0 Iyy 0;0 0 Izz];% moment of inertia tensor since drone is symmetrical, also Ixx = Iyy (square)
@@ -72,4 +72,4 @@ T_g=[J_r*q*(M1*W1(t)+M2*W2(t)+M3*W3(t)+M4*W4(t));
 % third term:
 T_g_2=cross(w,I*w);
 % Final Equation of motion
-w_dot=I\((Tm_total)-(T_g)-(T_g_2)) % Rotational Equation of Motion (Phi_dot_dot; Theta_dot_dot; Si_dot_dot)
+w_dot=I\((Tm_total)-(T_g)-(T_g_2)); % Rotational Equation of Motion (Phi_dot_dot; Theta_dot_dot; Si_dot_dot)

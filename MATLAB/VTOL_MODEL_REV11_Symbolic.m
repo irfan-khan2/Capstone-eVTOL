@@ -169,34 +169,7 @@ for i = 1:length(L_values)
 end
 
 
-% for i = 1:length(L_values)
-%     X = results{i}{3};  % Extract the state variable X
-%     t = results{i}{2};  % Extract the time vector
-% 
-%     % Evaluate numerical values of Acc_G using obtained X values
-%     Dis_G_numeric = zeros(length(t), 3);
-%     for j = 1:length(t)
-%         phi_val = num2str(X(j, 1));
-%         theta_val = num2str(X(j, 3));
-%         si_val = num2str(X(j, 5));
-%         W1_val = string(6207);
-%         W2_val = string(6207);
-%         W3_val = string(6207);
-%         W4_val = string(6207);
-%         acc = acc_G_values{i}{2};
-%         Dis_G = int(acc_G_values(),t,[0 j]);
-%         Dis_G = string(Dis_G);
-%         Dis_G=strrep(Dis_G,'phi(t)','X(1)');
-%         Dis_G=strrep(Dis_G,'theta(t)','X(3)');
-%         Dis_G=strrep(Dis_G,'si(t)','X(5)');
-%         Dis_G=strrep(Dis_G,'W1(t)','650');
-%         Dis_G=strrep(Dis_G,'W2(t)','650');
-%         Dis_G=strrep(Dis_G,'W3(t)','650');
-%         Dis_G=strrep(Dis_G,'W4(t)','650');
-%         Dis_G_numeric(j, :) = [eval(Dis_G(1,1)),eval(Dis_G(2,1)),eval(Dis_G(3,1))];
-%     end
-%     Dis_G_values{i} = {t, Dis_G_numeric};
-% end
+
 
 %% Create arrays to store maximum values and corresponding L values
 max_values = zeros(length(L_values), 1);
@@ -231,6 +204,7 @@ for i = 1:length(L_values)
     ylabel('Eulers Angualar Velocity (rad/s)');
     legend('phi dot','theta dot','si dot');
     hold off
+    grid on
 end
 
 figure;
@@ -249,6 +223,7 @@ for i = 1:length(L_values)
     ylabel('Eulers Angles (rad)');
     legend('phi','theta','si');
     hold off
+    grid on
 end
 
 %% Plot the results for different L values
@@ -269,6 +244,7 @@ for i = 1:length(L_values)
     plot(t_sim, acc_G_numeric(:, 3), '--');
     legend('X Acc_G','Y Acc_G','Z Acc_G');
     hold off
+    grid on
 end
 %% Function 
 function inertia_tensor = update_inertia_tensor(inertia_tensor_, P1, P2, P3, P4, point_masses)
